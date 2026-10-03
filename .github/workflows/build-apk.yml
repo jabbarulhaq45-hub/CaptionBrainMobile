@@ -1,4 +1,4 @@
-name: Build CaptionBrain Full APK
+name: Build CaptionBrain Full v2 APK
 
 on:
   workflow_dispatch:
@@ -14,12 +14,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Extract CaptionBrain Full project
+      - name: Extract CaptionBrain v2 project
         run: |
           rm -rf buildsrc
           mkdir -p buildsrc
-          unzip -q CaptionBrainFull_v1.0_BuildReady.zip -d buildsrc
-          echo "Project extracted successfully"
+          unzip -q CaptionBrainFull_v2.0_PreAnalysis_BuildReady.zip -d buildsrc
+          echo "CaptionBrain v2 extracted successfully"
           ls -la buildsrc
 
       - name: Set up Java 17
@@ -51,19 +51,20 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Build CaptionBrain Full APK
+      - name: Build CaptionBrain v2 APK
         working-directory: buildsrc
         run: |
           gradle :app:assembleDebug --stacktrace
 
       - name: Verify APK
         run: |
+          echo "Checking APK..."
           ls -lh buildsrc/app/build/outputs/apk/debug/
           test -f buildsrc/app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Upload CaptionBrain Full APK
+      - name: Upload CaptionBrain v2 APK
         uses: actions/upload-artifact@v4
         with:
-          name: CaptionBrain-Full-v1.0-APK
+          name: CaptionBrain-Full-v2.0-APK
           path: buildsrc/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
