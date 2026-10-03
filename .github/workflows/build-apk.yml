@@ -1,4 +1,4 @@
-name: Build CaptionBrain APK
+name: Build CaptionBrain Full APK
 
 on:
   workflow_dispatch:
@@ -14,10 +14,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Extract CaptionBrain project
+      - name: Extract CaptionBrain Full project
         run: |
-          mkdir buildsrc
-          unzip CaptionBrainMobile_v0.1_BuildReady.zip -d buildsrc
+          rm -rf buildsrc
+          mkdir -p buildsrc
+          unzip -q CaptionBrainFull_v1.0_BuildReady.zip -d buildsrc
+          echo "Project extracted successfully"
+          ls -la buildsrc
 
       - name: Set up Java 17
         uses: actions/setup-java@v5
@@ -25,10 +28,15 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Find and prepare Android SDK
+      - name: Prepare Android SDK
         run: |
           SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
           SDKMANAGER=$(find "$SDK_ROOT/cmdline-tools" -type f -name sdkmanager | sort -V | tail -n 1)
+
+          if [ -z "$SDKMANAGER" ]; then
+            echo "sdkmanager not found"
+            exit 1
+          fi
 
           echo "Using SDK Manager: $SDKMANAGER"
 
@@ -43,12 +51,19 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Build APK
+      - name: Build CaptionBrain Full APK
         working-directory: buildsrc
-        run: gradle :app:assembleDebug --stacktrace
+        run: |
+          gradle :app:assembleDebug --stacktrace
 
-      - name: Upload APK
+      - name: Verify APK
+        run: |
+          ls -lh buildsrc/app/build/outputs/apk/debug/
+          test -f buildsrc/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Upload CaptionBrain Full APK
         uses: actions/upload-artifact@v4
         with:
-          name: CaptionBrain-APK
+          name: CaptionBrain-Full-v1.0-APK
           path: buildsrc/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
